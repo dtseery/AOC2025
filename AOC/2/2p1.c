@@ -7,10 +7,6 @@
 //dial variable
 unsigned long long sum = 0;
 
-//SO BASICALLY I MISINTERPRETED THE INSTRUCTIONS
-//this code checks if a value range has values that contain any sequence!
-//ie 2121212121 is 21 repeating
-
 int containsRep(char* str, int len) {
 	//return 1 on repetition
 	int ret = 0;
@@ -85,40 +81,18 @@ int main(int argc, char** argv) {
 			//printf("readed: %s\n", intString);
 			//len of current Int String
 			int lenI = strlen(intString);
-			for(int j = 1; j<lenI; j++) {
-				//check for repeating length correctness
-				if(lenI%j == 0 && lenI != j) {
-					neq = false;
-					//var for repeat
-					char rep[j+1];
-					memset(rep, 0, sizeof(rep));
-					strncpy(rep, intString, j);
-					//printf("rep: %s c: %d\n", rep, j);
-					//printf("str: %s\n", intString);	
-					rep[j] = '\0';
-					//loop through string with respect to value
-					for(int k = 0; k<lenI; k+=j) {
-						//loop through value to check
-						for(int l = 0; l<j; l++) {
-							//printf("%c %c\n", rep[l], intString[k+l]);
-							if(rep[l] != intString[k+l]) {
-								//printf("neq at rep%d: %c str%d: %c\n", l, rep[l], k+l, intString[k+l]);	
-								neq = true;
-								break;
-							}
-						}
-					}
-					//printf("%d\n", neq);
-					if(!neq)
-					{
-						//printf("hit %lld\n", i);
-						sum+=i;
-						break;
-					}
-				}
-
+			//check for parity of length
+			if(lenI % 2 != 0) {
+				continue;
 			}
-
+			int offset = lenI/2;
+			for(int j = 0; j<offset; j++) {
+				if(intString[j] != intString[j+offset]) {
+					neq = true;
+					break;
+				}
+			}
+			if(!neq) sum+=i;
 			//printf("%s\n", intString);	
 		}
 		range = strtok_r(NULL, DELIM1, &out_save);
