@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdbool.h>
-#include <limits.h>
 
 unsigned long long sum = 0;
 
@@ -33,7 +32,7 @@ int main(int argc, char** argv) {
 		lRange[size-1] = strtoll(tok1, NULL, 10);
 		rRange[size-1] = strtoll(tok2, NULL, 10);
 	}
-	/*printf("loop 1\n");	
+	printf("loop 1\n");	
 	//loop to check values
 	while(getline(&buf, &uLen, fp) != -1) {
 		unsigned long long targ = strtoll(buf, NULL, 10);
@@ -45,9 +44,6 @@ int main(int argc, char** argv) {
 				break;
 			}	
 		}
-	}*/
-
-	//loop to get all values
-	unsigned long long hash[ULLONG_MAX];
+	}
 	printf("sum: %lld\n", sum);
 }
