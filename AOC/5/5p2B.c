@@ -5,7 +5,8 @@
 #include <stdbool.h>
 #include <limits.h>
 
-//We Must use this range method
+//Theoretically an implementation which keeps track of ranges could work.
+//But it is a lot of work.
 
 unsigned long long sum = 0;
 
@@ -30,15 +31,8 @@ int main(int argc, char** argv) {
 		//printf("%s %s\n", tok1, tok2);
 		unsigned long long valL = strtoll(tok1, NULL, 10);
 		unsigned long long valR = strtoll(tok2, NULL, 10);
-		int sizeOfOverlap = 0;
-		int* overlapArr;	
-		//expected workflow
-		//
-		//array finds all ranges that overlap
-		//combines that shit
-		//dynamically corrects the size of our corresponding arrays
-		//a recursive approach may prove helpful
-
+		int overlap = 0;
+		
 		for(int i = 0; i<size; i++) {
 			//checks that range does not touch the current range
 			if(valL > rRange[i]+1) continue;
