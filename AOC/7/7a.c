@@ -17,57 +17,36 @@ int main(int argc, char** argv) {
 	char* buf = NULL;
 	size_t uLen = 0;
 	int lenB = 0;
-	unsigned long long* currArr = 0;
+	char* currArr = 0;
 	while(getline(&buf, &uLen, fp) != -1) {
 		//length of line
 		if(strlen(buf) > lenB)lenB = strlen(buf);
 		//printf("here\n");
-		unsigned long long* newArr = calloc(lenB, sizeof(unsigned long long));
+		char* newArr = calloc(lenB, sizeof(char));
 		//printf("here2\n");
 		for(int i = 0; i<lenB; i++) {
+			//printf("currArr %s\n", buf);
 			//check if first line
 			if(currArr == NULL) {
 				if(*(buf+i) == 'S') {
-					//printf("here4\n");
-					*(newArr+i) = 1;
+				//printf("here4\n");
+				*(newArr+i) = 'S';
 				}
 				continue;
 			}
 			//if not first line, then check for a split between curr line and next line
-			if(*(buf+i) == '^' && *(currArr+i) > 0) {
-				//check if amount already in location
-				//breaks if we hit 127
-				if(*(newArr+i-1) > 0) {
-					printf("made1: %lld\n", *(newArr+i-1));
-					*(newArr+i-1) += *(currArr+i);
-
-				} else {
-					//printf("made2: %c\n", *(newArr+i-1));
-					*(newArr+i-1) = *(currArr+i);
-				}
-
-				*(newArr+i+1) = *(currArr+i);
+			if(*(buf+i) == '^' && *(currArr+i) == 'S') {
+			//printf("here5\n");
+				*(newArr+i-1) = 'S';
+				*(newArr+i+1) = 'S';
+				sum+=1;
 				continue;	
 			}
 			//if no split, check if last line had a line
-			if(*(currArr+i) > 0) *(newArr+i) += *(currArr+i);	
+			if(*(currArr+i) == 'S') *(newArr+i) = 'S';	
 		}
 		//set curr line to next line
 		currArr = newArr;
-		printf("currArr ");
-		for(int i = 0; i<lenB; i++) {
-			printf("%lld ", *(currArr+i));
-		}
-		printf("\n");
 	}
-	printf("end");
-	for(int i = 0; i<lenB; i++) {
-		printf("%lld ", *(currArr+i));
-		if(*(currArr+i) > 0) {
-			sum+= *(currArr+i);
-		}
-	}
-	printf("\n");
-
 	printf("sum: %lld\n", sum);
 }
