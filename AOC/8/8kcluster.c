@@ -5,6 +5,10 @@
 #include <stdbool.h>
 #include <math.h>
 
+//I Misunderstood the algorithm they want us to create. 
+//This algorithm is more efficient and disregards circuits already created
+//We need to regard junction boxes as separate entities from circuits
+//keeping this code for posterity and knowledge
 unsigned long long sum = 1;
 char* DELIM = ",";
 
