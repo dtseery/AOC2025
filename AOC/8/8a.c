@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 		//printf("%d %d %d in\n", (arr+dataSize-1)->x, (arr+dataSize-1)->y, (arr+dataSize-1)->z);
 	}
 	printf("done with input\n");	
-
+	
 	//array of euc distances between points
 	//long long may be needed for no overflow when doing x-x squared
 	mpz_t **dist = malloc(dataSize*sizeof(mpz_t*));
@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
 			int dx = (arr+i)->x - (arr+j)->x;
 			int dy = (arr+i)->y - (arr+j)->y;
 			int dz = (arr+i)->z - (arr+j)->z;
-
+			
 			mpz_t sdx, sdy, sdz;
 			mpz_init(sdx);
 			mpz_init(sdy);
@@ -94,18 +94,12 @@ int main(int argc, char** argv) {
 			mpz_clear(sdx);
 			mpz_clear(sdy);
 			mpz_clear(sdz);
-			//gmp_printf("%Zd\n", dist[i][j]);
+			gmp_printf("%Zd\n", dist[i][j]);
 		}
 	}
 	//find shortest euc distance n times
-	//flag to indicate if we continue connecting
-	int flag = 1;
-
-	//points for the last 2 points
-
-	Point *out1;
-	Point *out2;
-	while(flag) {
+	int n = 1000;
+	for(int i = 0; i<n; i++) {
 		//find minimum
 		//
 		//forced to use large numbers for comparison because of overflow	
@@ -119,68 +113,69 @@ int main(int argc, char** argv) {
 				//skips unused
 				if(j <= k) continue;
 				//if(dist[j][k] < min) {
-
+				
 				if(mpz_cmp(dist[j][k], min) < 0) {
 					mpz_set(min, dist[j][k]);
 					min1 = j;
 					min2 = k;
 				}
 				/*if(j == 19) {
-				  printf("dist of 19 to %d is %llu\n", k, dist[19][k]);
-				  }*/	
+					printf("dist of 19 to %d is %llu\n", k, dist[19][k]);
+				}*/	
 			}
+		}
+		gmp_printf("merging: %d and %d with minimum of %Zd\n", min1, min2, min);
+		if(min1 == -1 || min2 == -1) {
+			printf("error min could not be found!\n");
+			return -1;
+		}
+
+		//firstly, in every case we set the dist to -1 so it cannot be found again
+		mpz_set_str(dist[min1][min2], "184467440737095516150000", 10);
+
+		//if both points are in the same network, we do not need to change anything
+		if(arr[min1].group == arr[min2].group) continue;
+		
+		int newG = arr[min1].group;
+		int oldG = arr[min2].group;
+		//printf("NEW GROUP %d\n", newG);
+		//in this case we need to merge the two groups of points
+		//first put all points of min2 group in min1 group
+		for(int j = 0; j<dataSize; j++) {
+			if(arr[j].group == oldG) {
+				arr[j].group = newG;
+				//printf("replaced value at %d\n", j);
 			}
-			gmp_printf("merging: %d and %d with minimum of %Zd\n", min1, min2, min);
-			if(min1 == -1 || min2 == -1) {
-				printf("error min could not be found!\n");
-				return -1;
-			}
-
-			//firstly, in every case we set the dist to -1 so it cannot be found again
-			mpz_set_str(dist[min1][min2], "184467440737095516150000", 10);
-
-			//if both points are in the same network, we do not need to change anything
-			if(arr[min1].group == arr[min2].group) continue;
-
-			int newG = arr[min1].group;
-			int oldG = arr[min2].group;
-			//printf("NEW GROUP %d\n", newG);
-			//in this case we need to merge the two groups of points
-			//first put all points of min2 group in min1 group
-			for(int j = 0; j<dataSize; j++) {
-				if(arr[j].group == oldG) {
-					arr[j].group = newG;
-					//printf("replaced value at %d\n", j);
-				}
-			}
-
-			//loop autoreplaces oldG in min2
-
-			for(int j = 0; j<dataSize; j++) {
-				//printf("new values P%d: %d\n", j, arr[j].group);
-			}
-
-			//loop to check if all values are in one circuit
-				 
-			int simGroup = arr[0].group;
-			int notGrouped = 0;
-			for(int j = 1; j<dataSize; j++) {
-				if(arr[j].group !=  simGroup) {
-					notGrouped = 1;
-					break;
-				}		
-			}
-			if(notGrouped == 1) continue;
-			
-			//final combined points
-			out1 = &arr[min1]; 
-			out2 = &arr[min2];
-			flag = 0;
 		}
 		
-		printf("points %ld and %ld are last combined!\n", out1-arr, out2-arr);	
+		//loop autoreplaces oldG in min2
 		
-		sum *= out1->x;
-		sum *= out2->x;
-		printf("end val: %lld\n", sum);
+		for(int j = 0; j<dataSize; j++) {
+			//printf("new values P%d: %d\n", j, arr[j].group);
+		}
 	}
+	//create array for totals 
+	unsigned long totals[dataSize];
+	memset(totals, 0, sizeof(unsigned long) * dataSize);
+	for(int i = 0; i<dataSize; i++) {
+		//printf("added 1 to %d\n", arr[i].group-1);
+		totals[arr[i].group-1]+=1;
+	}
+
+	for(int i = 0; i<3; i++) {
+		unsigned long max = 0;
+		int ej = 0;
+		for(int j = 0; j<dataSize; j++) {
+			if(totals[j] > max) {
+				max = totals[j];
+				ej = j;
+			}
+		}
+		printf("end val %d: %ld\n", ej, totals[ej]);
+		sum *= totals[ej];
+		totals[ej] = 0;
+	}	
+
+
+	printf("end val: %lld\n", sum);
+}
