@@ -55,41 +55,17 @@ int main(int argc, char** argv) {
 			if(*(buf+i) == 64) *(*(arr+size-1)+i) = 1;
 		}	
 	}
-	//printf("line len%d\n", lenB);
-	//printf("size %d\n", size);
-
-	//array to hold coords of last roll locations to remove.	
-	int lastArr1[lenB*size];
-	int lastArr2[lenB*size];
-	int lastSize = 0;
-	//sum per iteration
-	int itSum;
-	//check if itSum is 0
-	while(1) {
-		lastSize = 0;
-		memset(lastArr1, 0, lenB*size*sizeof(int));
-		memset(lastArr2, 0, lenB*size*sizeof(int));
-		itSum = 0;
-		for(int i = 0; i<size; i++) {
-			for(int j = 0; j<lenB; j++) {
-				//printf("%d %d\n", i, j);
-				if(checker(arr, size, lenB, i, j) == 0 && *(*(arr+i)+j) == 1){
-					printf("added at %d %d\n", i, j);
-					lastArr1[lastSize] = i;
-					lastArr2[lastSize] = j;
-					lastSize++;
-					itSum++;
-					sum++;
+	printf("line len%d\n", lenB);
+	printf("size %d\n", size);
+	for(int i = 0; i<size; i++) {
+		for(int j = 0; j<lenB; j++) {
+			//printf("%d %d\n", i, j);
+			if(checker(arr, size, lenB, i, j) == 0 && *(*(arr+i)+j) == 1){
+				printf("added at %d %d\n", i, j);
+				sum++;
 				}
 			}
-		}
-		//checks if itSum is zero
-		if(itSum == 0) break;
-		for(int i = 0; i<lastSize; i++) {
-			int c1 = lastArr1[i];
-			int c2 = lastArr2[i];
-			*(*(arr+c1)+c2) = 0;
-		}	
 	}
+
 	printf("sum: %lld\n", sum);
 }
