@@ -6,11 +6,112 @@
 
 unsigned long long sum = 0;
 char* DELIM = ",";
+int finalhullsize = 0;
 
 typedef struct {
 	unsigned long long x;
 	unsigned long long y;
 } Point;
+
+int pointCompare (const void* pA, const void* pB) 
+{
+    int x1 = ((Point*)pA)->x;
+    int x2 = ((Point*)pB)->x;
+    int y1 = ((Point*)pA)->y;
+    int y2 = ((Point*)pB)->y;
+    if (x1 > x2) return 1;
+    if (x2 < x1) return -1;
+    if (y1 > y2) return 1;
+    if (y2 < y1) return -1;
+    return 0;
+}
+unsigned long long dist(Point a, Point b) {
+	return abs((long long)(a.x-b.x)) * abs((long long)(a.y-b.y));
+};
+
+unsigned long long absArea (Point a, Point b, Point c) {
+	return abs((a.x * b.y + b.x * c.y + c.x * a.y) - (a.y * b.x + b.y * c.x + c.y * a.x));
+
+}
+
+long long crossProduct (Point a, Point b, Point c) {
+	long long v1 = (long long)(b.x - a.x) * (long long)(c.y - a.y);
+	long long v2 = (long long)(b.y - a.y) * (long long)(c.x - a.x);
+	return v1-v2;
+}
+
+Point* convHull(Point* points, int size) {
+	int hullsize = 0;
+	int hullcap = 4;
+	Point* hull = calloc(hullcap, sizeof(Point));
+        qsort(points, size, sizeof(*points), pointCompare);
+	//one by one
+	for(int i = 0; i<size; i++) {
+		//printf("point %d: %llu, %llu \n", i, points[i].x, points[i].y);	
+		
+		if(hullsize >= 2) printf("area here: %lld\n", crossProduct(hull[hullsize-2], hull[hullsize-1], points[i]));	
+		while(hullsize >= 2 && crossProduct(hull[hullsize-2], hull[hullsize-1], points[i]) <= 0) {
+			memset(hull+hullsize-1, 0, sizeof(Point));
+			hullsize--;	
+		}
+		
+		//before adding, check if we need to increase our array size
+		if(hullsize == hullcap) {
+			hullcap<<=1;
+			hull = realloc(hull, hullcap*sizeof(Point));
+		}
+
+		//add point at i
+		hull[hullsize] = points[i];
+		hullsize++;
+		
+	}
+	
+	for(int i = size-2, t = hullsize+1; i>=0; i--) {
+		while(hullsize >= t && crossProduct(hull[hullsize-2], hull[hullsize-1], points[i]) <= 0 ) {
+			memset(hull+hullsize-1, 0, sizeof(Point));
+			hullsize--;
+		}
+		
+		//before adding, check if we need to increase our array size
+		if(hullsize == hullcap) {
+			hullcap<<=1;
+			hull = realloc(hull, hullcap*sizeof(Point));
+		}
+
+		//add point at i
+		hull[hullsize] = points[i];
+		hullsize++;
+
+	}
+	
+	
+	memset(hull+hullsize-1, 0, sizeof(Point));
+	hullsize--;
+	//output
+	finalhullsize = hullsize;
+	return hull;
+
+}
+
+unsigned long long rotatingCaliper(Point* hull) {
+	if(finalhullsize <= 1) return 0;
+	if(finalhullsize == 2) return dist(hull[0], hull[1]);
+	int n = finalhullsize;
+	int k = 1;
+	
+	//finding the farthest vertex from hull[0] & hull[n-1]
+	while(  crossProduct(hull[n-1], hull[0], hull[(k+1) % n]) > crossProduct(hull[n-1], hull[0], hull[k])  ) {
+		k+=1;
+	}
+
+	unsigned long long res = 0;
+
+	for(int i = 0; i<(k+1); i++) {
+		int j=(i+1)%n;
+	}
+
+}
 
 int main(int argc, char** argv) {
 	FILE* fp = NULL;
@@ -20,9 +121,7 @@ int main(int argc, char** argv) {
 		printf("Error opening file. Make sure file exists.\\n");
 		return -1; // Exit the program with an error
 	}
-
-	//array for 4 considerable points
-	int coMax[4];
+	
 
 	//array for 2 actual points
 	int max[2];
@@ -40,74 +139,15 @@ int main(int argc, char** argv) {
 		arr = realloc(arr, dataSize*sizeof(Point));
 		(arr+dataSize-1)->x = strtol(strtok(buf, DELIM), NULL, 10);	
 		(arr+dataSize-1)->y = strtol(strtok(NULL, DELIM), NULL, 10);	
-		if(dataSize < 2) continue;
-		if(dataSize == 2) {
-			max[0] = 0;
-			max[1] = 1;
-			sum = (abs(arr[max[0]].x - arr[max[1]].x)+1) * (abs(arr[max[0]].y - arr[max[1]].y)+1); 
-			continue;
-		}
-		if(dataSize == 3){
-			//check new point against maxes
-			for(int i = 0; i<2; i++) {
-				unsigned long long val = (abs(arr[max[i]].x - arr[dataSize-1].x)+1) 
-					* (abs(arr[max[i]].y - arr[dataSize-1].y)+1); 
-				if(val > sum) {
-					max[0] = max[i];
-					max[1] = dataSize-1;
-					sum = val;
-				}
-			}
-			continue;
-		}
-		if(dataSize == 4) {	
-			coMax[0] = 0;
-			coMax[1] = 1;
-			coMax[2] = 2;
-			coMax[3] = 3;
-			//check new point against maxes
-			for(int i = 0; i<dataSize-1; i++) {
-				unsigned long long val = (abs(arr[i].x - arr[dataSize-1].x)+1) 
-					* (abs(arr[i].y - arr[dataSize-1].y)+1); 
-				if(val > sum) {
-					max[0] = i;
-					max[1] = dataSize-1;
-					sum = val;
-					printf("ds4max is now %d point %lld,%lld and %d point %lld, %lld\n", max[0], arr[max[0]].x, arr[max[0]].y,max[1], arr[max[1]].x, arr[max[1]].y);
-				}
-			}
+				
+	}
 
-		}
-		if(dataSize < 5) continue;
-		//check new point against coMaxes
-		int valEquals = 0;
-		unsigned long long pointMin = -1;
-		int minPoint = -1;
-		for(int i = 0; i<4; i++) {
-				unsigned long long diff1 = abs(arr[coMax[i]].x - arr[dataSize-1].x) + 1;
-				unsigned long long diff2 = abs(arr[coMax[i]].y - arr[dataSize-1].y) + 1;
-				unsigned long long val = diff1*diff2;
-				//printf("cal runs %llu * %llu to become -> %llu\n", diff1, diff2, val);
-				if(val > sum) {
-					max[0] = coMax[i];
-					max[1] = dataSize-1;
-					printf("max is now %d point %lld,%lld and %d point %lld, %lld\n", max[0], arr[max[0]].x, arr[max[0]].y,max[1], arr[max[1]].x, arr[max[1]].y);
-					sum = val;
-					printf("sum is %llu\n", sum);
-				}
-				if(val == sum) valEquals = 1;
-				if(val < pointMin) {
-					pointMin = val;
-					minPoint = i;
-				}
-		}
-		//replace point that is the closest to the new point
-		//if the new point is in the max
-		if(max[1] == dataSize-1 || (max[1] != dataSize-1 && valEquals)) {
-			printf("replacing coMax:%d, at %d point %lld, %lld, with new %d point %lld, %lld\n", minPoint, coMax[minPoint], arr[coMax[minPoint]].x, arr[coMax[minPoint]].y, dataSize-1, arr[dataSize-1].x, arr[dataSize-1].y);
-			coMax[minPoint] = dataSize-1;
-		}
+	Point* convexHull = convHull(arr, dataSize);
+	sum = rotatingCalipers(convexHull);
 
+
+	for(int i = 0; i<finalhullsize; i++) {
+		printf("Point %d: %llu, %llu \n", i, (convexHull+i)->x, (convexHull+i)->y);
 	}
 
 	printf("ending area is %llu\n", sum);
