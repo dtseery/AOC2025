@@ -26,7 +26,7 @@ int pointCompare (const void* pA, const void* pB)
 	return 0;
 }
 unsigned long long dist(Point a, Point b) {
-	return abs((long long)(a.x-b.x)) * abs((long long)(a.y-b.y));
+	return (abs((long long)(a.x-b.x))+1) * (abs((long long)(a.y-b.y))+1);
 };
 
 unsigned long long absArea (Point a, Point b, Point c) {
