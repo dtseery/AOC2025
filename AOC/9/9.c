@@ -94,11 +94,14 @@ Point* convHull(Point* points, int size) {
 
 }
 
-unsigned long long rotatingCaliper(Point* hull) {
+unsigned long long rotatingCalipers(Point* hull) {
 	if(finalhullsize <= 1) return 0;
 	if(finalhullsize == 2) return dist(hull[0], hull[1]);
 	int n = finalhullsize;
 	int k = 1;
+	printf("hull size %d\n", n);	
+	
+	//this may be naive? we need to find the two farthest points from eachother in the hull, and check rotation based on those.
 	
 	//finding the farthest vertex from hull[0] & hull[n-1]
 	while(  crossProduct(hull[n-1], hull[0], hull[(k+1) % n]) > crossProduct(hull[n-1], hull[0], hull[k])  ) {
@@ -106,10 +109,23 @@ unsigned long long rotatingCaliper(Point* hull) {
 	}
 
 	unsigned long long res = 0;
-
+	
+	//check points from 0 to k
 	for(int i = 0; i<(k+1); i++) {
-		int j=(i+1)%n;
+		int j=(i+1) % n;
+		printf("Pair of:\n");
+		printf("Point %d: %llu, %llu \n", i, hull[i].x, hull[i].y);
+		printf("Point %d: %llu, %llu \n", (j+1)%n, hull[(j+1)%n].x, hull[(j+1)%n].y);
+		while(  crossProduct(hull[i], hull[(i+1) % n], hull[(j+1) % n]) > crossProduct(hull[i], hull[(i+1)%n], hull[j])  ) {
+			long long cp = dist(hull[i], hull[(j+1)%n]);
+			if(cp>res){
+				//printf("new largest at points:\n");
+				res = cp;
+			}
+			j=((j+1)%n);
+		}
 	}
+	return res;
 
 }
 
@@ -145,7 +161,8 @@ int main(int argc, char** argv) {
 	Point* convexHull = convHull(arr, dataSize);
 	sum = rotatingCalipers(convexHull);
 
-
+	
+	printf("Full Hull Print:\n");
 	for(int i = 0; i<finalhullsize; i++) {
 		printf("Point %d: %llu, %llu \n", i, (convexHull+i)->x, (convexHull+i)->y);
 	}
